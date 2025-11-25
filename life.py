@@ -1,3 +1,4 @@
+import random
 import pygame
 import time
 import json
@@ -100,7 +101,17 @@ class Panel:
 
     def place_pattern(self, field, name, gx, gy, H, W):
         'Размещает выбранный шаблон на поле'
-        for dx, dy in self.patterns[name]:
+        if name == "random":
+            # Создаём случайный паттерн 5x5
+            pattern = []
+            for dy in range(5):
+                for dx in range(5):
+                    if random.random() < 0.5:  # 50% шанс
+                        pattern.append([dx, dy])
+        else:
+            pattern = self.patterns[name]
+        
+        for dx, dy in pattern:
             x = (gx + dx) % W
             y = (gy + dy) % H
             field[y][x] = 1
@@ -114,7 +125,7 @@ def draw_field(screen, field, H, W, cell_size, bg_color, cell_color, text_color,
             if field[y][x]:
                 pygame.draw.rect(screen, cell_color, (x * cell_size, y * cell_size, cell_size - 1, cell_size - 1))
     font = pygame.font.SysFont("monospace", 16)
-    text = font.render(f"Speed: {speed_ms} ms | A/Z speed, SPACE exit", True, text_color)
+    text = font.render(f"Speed: {speed_ms} ms | A/Z speed, SPACE exit, C clear", True, text_color)
     screen.blit(text, (5, H * cell_size - 20))
     pygame.display.flip()
 
@@ -176,6 +187,8 @@ def main():
                     speed_ms = max(10, speed_ms - 10)
                 elif event.key == pygame.K_z:
                     speed_ms = min(2000, speed_ms + 10)
+                elif event.key == pygame.K_c:
+                    field.grid = [[0 for _ in range(W)] for _ in range(H)]
 
             selected_pattern, dragging = panel.handle_mouse(event, field, cell_size, W, H, selected_pattern, dragging)
 
